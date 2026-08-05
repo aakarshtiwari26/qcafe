@@ -56,7 +56,7 @@ export async function Footer() {
                 </li>
               )}
               <li className="flex gap-2">
-                <Mail className="size-4 shrink-0 mt-0.5" /> {site.supportEmail}
+                <Mail className="size-4 shrink-0 mt-0.5" /> {settings?.email || site.supportEmail}
               </li>
               {settings?.openingTime && settings?.closingTime && (
                 <li className="flex gap-2">

@@ -16,9 +16,9 @@ function itemsTable(order: Pick<IOrder, "items">) {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-top:1px solid #ececec;border-bottom:1px solid #ececec;padding:4px 0;">${rows}</table>`;
 }
 
-export function orderConfirmationEmail(order: IOrder) {
+export async function orderConfirmationEmail(order: IOrder) {
   const site = getSiteConfig();
-  const html = emailLayout(
+  const html = await emailLayout(
     `<h1 style="margin:0 0 4px;font-size:20px;color:#18181b;">Order received</h1>
 <p style="margin:0 0 4px;font-size:14px;color:#52525b;">Order <strong>${order.orderId}</strong> is confirmed and headed to the kitchen.</p>
 ${itemsTable(order)}
@@ -34,10 +34,10 @@ ${emailButton("Track your order", `${site.url}/orders/${order.orderId}`)}`,
   return { subject: `Order ${order.orderId} confirmed · ${site.name}`, html };
 }
 
-export function orderStatusUpdateEmail(order: Pick<IOrder, "orderId">, status: OrderStatus) {
+export async function orderStatusUpdateEmail(order: Pick<IOrder, "orderId">, status: OrderStatus) {
   const site = getSiteConfig();
   const label = ORDER_STATUS_LABELS[status];
-  const html = emailLayout(
+  const html = await emailLayout(
     `<h1 style="margin:0 0 8px;font-size:20px;color:#18181b;">${label}</h1>
 <p style="margin:0;font-size:14px;line-height:22px;color:#52525b;">Your order <strong>${order.orderId}</strong> is now <strong>${label}</strong>.</p>
 ${emailButton("View order status", `${site.url}/orders/${order.orderId}`)}`,

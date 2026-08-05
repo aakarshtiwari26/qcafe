@@ -1,12 +1,16 @@
 import { getSiteConfig } from "@/config/site";
+import { getRestaurantSettings } from "@/services/settings.service";
 
 /**
  * Every transactional email wraps this shell — table-based layout because
- * Outlook/Gmail strip modern CSS. All branding comes from getSiteConfig(),
- * itself sourced from env vars: change APP_NAME and every email changes too.
+ * Outlook/Gmail strip modern CSS. Branding comes from getSiteConfig() (env
+ * vars); the support email comes from the admin-editable RestaurantSettings
+ * doc, falling back to the env var if that's ever empty.
  */
-export function emailLayout(bodyHtml: string, opts: { preheader?: string } = {}): string {
+export async function emailLayout(bodyHtml: string, opts: { preheader?: string } = {}): Promise<string> {
   const site = getSiteConfig();
+  const settings = await getRestaurantSettings().catch(() => null);
+  const supportEmail = settings?.email || site.supportEmail;
   const year = new Date().getFullYear();
 
   return `<!doctype html>
@@ -35,7 +39,7 @@ ${bodyHtml}
 <td style="padding:24px 32px;background-color:#fafafa;text-align:center;">
 <p style="margin:0;font-size:12px;line-height:18px;color:#a1a1aa;">
 ${site.name} &middot; ${year}<br/>
-Need help? <a href="mailto:${site.supportEmail}" style="color:#71717a;">${site.supportEmail}</a>
+Need help? <a href="mailto:${supportEmail}" style="color:#71717a;">${supportEmail}</a>
 </p>
 </td>
 </tr>

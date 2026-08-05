@@ -36,11 +36,11 @@ const COPY: Record<OtpPurpose, { subject: string; heading: string; blurb: string
   },
 };
 
-export function otpEmail(purpose: OtpPurpose, code: string) {
+export async function otpEmail(purpose: OtpPurpose, code: string) {
   const site = getSiteConfig();
   const copy = COPY[purpose];
 
-  const html = emailLayout(
+  const html = await emailLayout(
     `<h1 style="margin:0 0 8px;font-size:20px;color:#18181b;">${copy.heading}</h1>
 <p style="margin:0;font-size:14px;line-height:22px;color:#52525b;">${copy.blurb}</p>
 ${emailOtpBlock(code)}
