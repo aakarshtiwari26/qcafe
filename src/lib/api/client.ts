@@ -8,7 +8,6 @@ export class ApiClientError extends Error {
   }
 }
 
-/** Thin fetch wrapper matching the {data} / {error} envelope every API route returns. */
 export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...options,
@@ -28,7 +27,6 @@ export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T
   return body.data as T;
 }
 
-/** Multipart upload — never set a Content-Type header, the browser sets the boundary. */
 export async function apiUpload<T>(url: string, formData: FormData): Promise<T> {
   const res = await fetch(url, { method: "POST", body: formData });
   const body = await res.json().catch(() => ({}));

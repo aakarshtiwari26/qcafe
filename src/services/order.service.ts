@@ -56,7 +56,7 @@ export async function createOrder(userId: string, input: CreateOrderInput, reque
 
   const taxAmount = Math.round((subtotal * settings.taxPercent) / 100);
   const deliveryFee = settings.deliveryCharges;
-  const discountAmount = 0; // Coupons are architecture-ready but not enforced at checkout yet.
+  const discountAmount = 0;
   const total = subtotal + taxAmount + deliveryFee - discountAmount;
 
   const orderId = await generateUniqueOrderId();

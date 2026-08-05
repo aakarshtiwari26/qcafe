@@ -1,11 +1,6 @@
 import mongoose from "mongoose";
 import { env } from "@/config/env";
 
-/**
- * Cached connection across hot-reloads (dev) and serverless invocations
- * (Vercel) — without this, every route handler would open a new
- * connection and exhaust MongoDB Atlas' connection limit under load.
- */
 type MongooseCache = {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;

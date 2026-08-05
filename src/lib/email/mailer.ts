@@ -8,7 +8,6 @@ import type { IOrder } from "@/models";
 
 export async function sendOtpEmail(to: string, purpose: OtpPurpose, code: string) {
   if (env.NODE_ENV !== "production") {
-    // Local/dev convenience only — never logs the code in production.
     console.log(`[dev-otp] ${purpose} code for ${to}: ${code}`);
   }
   const { subject, html } = await otpEmail(purpose, code);

@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
       search: params.get("search") ?? undefined,
       page: params.get("page") ? Number(params.get("page")) : undefined,
       pageSize: params.get("pageSize") ? Number(params.get("pageSize")) : undefined,
-      // Only admins may ever see hidden items — the query param is ignored for everyone else.
       includeHidden: isAdmin && params.get("includeHidden") === "true",
     });
     return NextResponse.json({ data: result });

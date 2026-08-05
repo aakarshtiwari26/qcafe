@@ -197,7 +197,6 @@ export async function refreshSession(refreshTokenValue: string, request: NextReq
     throw new UnauthorizedError("Session no longer valid");
   }
 
-  // Rotate: revoke the used token and issue a fresh pair.
   stored.revokedAt = new Date();
   await stored.save();
 
@@ -216,7 +215,6 @@ export async function resendRegistrationOtp(email: string) {
   await connectDB();
   const user = await User.findOne({ email });
   if (!user || user.status !== USER_STATUS.PENDING_VERIFICATION) {
-    // Do not reveal account existence/state.
     return;
   }
   const code = generateOtpCode();

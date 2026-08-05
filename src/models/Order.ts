@@ -8,10 +8,6 @@ import {
   type PaymentStatus,
 } from "@/constants";
 
-/**
- * Order items and delivery address are snapshotted at order time —
- * a later price change or hostel rename must never rewrite history.
- */
 export interface IOrderItem {
   menuItem: Types.ObjectId;
   name: string;

@@ -1,10 +1,5 @@
 import { Schema, model, models, type Model, type Document } from "mongoose";
 
-/**
- * Schema + admin CRUD exist now; live redemption/validation at checkout is
- * intentionally not wired up yet (see PROJECT scope: coupons are
- * architecture-ready, not an active feature).
- */
 export interface ICoupon extends Document {
   code: string;
   description?: string;

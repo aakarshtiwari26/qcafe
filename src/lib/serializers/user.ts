@@ -1,6 +1,5 @@
 import type { IUser } from "@/models";
 
-/** Never send passwordHash, loginAttempts, or lockUntil to the client. */
 export function toPublicUser(user: IUser) {
   return {
     id: String(user._id),

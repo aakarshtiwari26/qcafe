@@ -1,6 +1,5 @@
 import type { IMenuItem } from "@/models";
 
-/** Plain, client-safe shape for a menu item — used across menu, cart, and admin UIs. */
 export interface MenuItemDTO {
   id: string;
   name: string;

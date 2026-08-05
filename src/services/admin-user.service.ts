@@ -60,7 +60,6 @@ export async function setUserStatus(userId: string, status: typeof USER_STATUS.A
   if (!user) throw new NotFoundError("User not found");
 
   if (status === USER_STATUS.SUSPENDED) {
-    // Kill every active session immediately — suspension must take effect now, not at token expiry.
     await RefreshToken.updateMany({ user: userId, revokedAt: { $exists: false } }, { $set: { revokedAt: new Date() } });
   }
 

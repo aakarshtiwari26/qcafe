@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email } = schema.parse(body);
 
-    // Keyed by email (not IP) — the resend cooldown must apply per-account.
     const limit = rateLimit(`resend-otp:${email}`, RATE_LIMIT_PRESETS.OTP_REQUEST);
     if (!limit.success) throw new RateLimitedError("Please wait before requesting another code");
 

@@ -33,8 +33,6 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Basic CSRF hardening: cookies are SameSite=Lax already, but explicitly
-  // reject cross-origin state-changing API calls as a second layer.
   if (pathname.startsWith("/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
     const origin = request.headers.get("origin");
     if (origin && origin !== request.nextUrl.origin) {
@@ -58,9 +56,6 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set("redirect", pathname);
       return applySecurityHeaders(NextResponse.redirect(loginUrl));
     }
-    // Signed in but not an admin: sending them to /login would just bounce
-    // straight back to "/" via the guest-only-route check below, with no
-    // indication of why. Send them home directly instead.
     if (session.role !== USER_ROLE.ADMIN && session.role !== USER_ROLE.SUPER_ADMIN) {
       return applySecurityHeaders(NextResponse.redirect(new URL("/", request.url)));
     }

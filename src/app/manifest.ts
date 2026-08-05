@@ -1,11 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSiteConfig } from "@/config/site";
 
-/**
- * Basic web manifest — drives "Add to Home Screen" branding today. Full
- * PWA (service worker, offline caching, install prompts) is intentionally
- * out of scope for now; see PROJECT future-features notes.
- */
 export default function manifest(): MetadataRoute.Manifest {
   const site = getSiteConfig();
 

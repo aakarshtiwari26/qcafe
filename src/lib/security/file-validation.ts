@@ -1,10 +1,8 @@
 import { AppError } from "@/lib/api/errors";
 
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-// Magic-byte signatures — the client-sent MIME type is untrusted; the
-// first bytes of the actual payload are what we verify against.
 const SIGNATURES: Array<{ mime: string; bytes: number[] }> = [
   { mime: "image/jpeg", bytes: [0xff, 0xd8, 0xff] },
   { mime: "image/png", bytes: [0x89, 0x50, 0x4e, 0x47] },

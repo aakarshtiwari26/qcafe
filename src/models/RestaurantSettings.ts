@@ -1,11 +1,5 @@
 import { Schema, model, models, type Model, type Document } from "mongoose";
 
-/**
- * Singleton document (fixed key "main") holding the operational settings
- * the admin edits at runtime — distinct from `.env`, which holds
- * deployment-time config (secrets, defaults) that seeds this document
- * on first boot.
- */
 export interface IRestaurantSettings extends Document {
   key: "main";
   name: string;

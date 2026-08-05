@@ -2,8 +2,6 @@ import crypto from "crypto";
 import { ORDER_ID_PREFIX } from "@/constants";
 import { Order } from "@/models";
 
-// Excludes visually ambiguous characters (0/O, 1/I/L) — order IDs get read
-// aloud at pickup counters and typed into a "track my order" box.
 const ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
 function randomSegment(length: number): string {
@@ -14,7 +12,6 @@ function randomSegment(length: number): string {
   return out;
 }
 
-/** Generates a short, human-friendly, guaranteed-unique order ID like QC-8K4P7. */
 export async function generateUniqueOrderId(): Promise<string> {
   for (let attempt = 0; attempt < 10; attempt++) {
     const candidate = `${ORDER_ID_PREFIX}-${randomSegment(5)}`;

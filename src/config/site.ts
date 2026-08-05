@@ -1,15 +1,5 @@
 import { env } from "./env";
 
-/**
- * The single place that turns raw env vars into the shape the UI, emails,
- * metadata, and manifest actually consume. Change APP_NAME (etc.) in .env
- * and every surface below updates — nothing here should ever be a literal
- * restaurant name.
- *
- * Server-only: reads `env` directly. Server Components can call this freely.
- * Client Components must receive the result via props/context — see
- * `src/components/providers/site-config-provider.tsx`.
- */
 export function getSiteConfig() {
   return {
     name: env.APP_NAME,

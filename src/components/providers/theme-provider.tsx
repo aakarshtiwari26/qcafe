@@ -43,19 +43,6 @@ function subscribeToSystemChanges(callback: () => void) {
   return () => media.removeEventListener("change", callback);
 }
 
-/**
- * Hand-rolled replacement for `next-themes`, which injects a raw <script>
- * element into the React tree to avoid flash-of-wrong-theme — a pattern
- * React 19 now flags as an error (a known, unresolved upstream issue on an
- * unmaintained package). The same anti-flash behavior is reproduced here
- * via `next/script[strategy=beforeInteractive]` in the root layout, which
- * Next.js exempts from that check.
- *
- * Theme/system-preference reads go through useSyncExternalStore rather than
- * state-synced-in-an-effect, so a same-tab `setTheme` call re-broadcasts via
- * a custom event (localStorage writes don't fire `storage` in the writing
- * tab itself).
- */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useSyncExternalStore(subscribeToThemeChanges, getStoredTheme, getStoredThemeServer);
   const systemTheme = useSyncExternalStore(subscribeToSystemChanges, getSystemTheme, getSystemThemeServer);

@@ -2,7 +2,6 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { env } from "@/config/env";
 
-/** Cryptographically random numeric OTP — never Math.random(). */
 export function generateOtpCode(): string {
   const length = env.OTP_LENGTH;
   const max = 10 ** length;

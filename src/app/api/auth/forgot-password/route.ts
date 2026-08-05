@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
     const input = forgotPasswordSchema.parse(body);
     await forgotPassword(input);
 
-    // Always return success — never reveal whether the email is registered.
     return NextResponse.json({ data: { success: true } });
   } catch (error) {
     return handleApiError(error);

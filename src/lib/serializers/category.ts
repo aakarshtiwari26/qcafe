@@ -7,7 +7,6 @@ export interface CategoryDTO {
   image?: string;
 }
 
-/** Plain, client-safe shape — Mongoose documents can't cross the Server/Client Component boundary. */
 export function toCategoryDTO(category: ICategory): CategoryDTO {
   return {
     id: String(category._id),

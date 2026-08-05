@@ -20,12 +20,6 @@ interface CartState {
   clearCart: () => void;
 }
 
-/**
- * Persisted to localStorage under "qcafe-cart" — this is what makes the
- * cart survive refreshes, tab closes, AND login (there's no separate
- * "guest cart" that needs merging: the same client-side cart carries
- * straight through the login action into checkout).
- */
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({

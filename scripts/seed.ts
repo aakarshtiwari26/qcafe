@@ -1,11 +1,3 @@
-/**
- * Local dev seed data — realistic hostels/categories/menu items (using the
- * placeholder food photos already in public/images/menu) plus one admin
- * account, so the app looks and behaves like a real deployment without
- * needing ImageKit credentials. Never run against production data.
- *
- * Usage: npm run seed
- */
 import { connectDB } from "../src/lib/db/connect";
 import { Hostel, Category, MenuItem, User, Coupon } from "../src/models";
 import { hashPassword } from "../src/lib/auth/password";

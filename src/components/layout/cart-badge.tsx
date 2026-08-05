@@ -8,8 +8,6 @@ import { useMounted } from "@/hooks/use-mounted";
 
 export function CartBadge() {
   const items = useCartStore((s) => s.items);
-  // Avoid SSR/client hydration mismatch — the persisted store only
-  // rehydrates from localStorage after mount.
   const mounted = useMounted();
 
   const count = mounted ? cartItemCount(items) : 0;

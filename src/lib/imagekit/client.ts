@@ -9,11 +9,6 @@ export interface UploadedImage {
   fileId: string;
 }
 
-/**
- * Server-side upload used by admin flows (menu items, categories,
- * restaurant branding). Never persist images in MongoDB — only this
- * {url, fileId} pointer is stored; ImageKit is the source of truth and CDN.
- */
 export async function uploadImage(
   buffer: Buffer,
   fileName: string,

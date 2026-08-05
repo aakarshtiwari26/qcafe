@@ -51,11 +51,6 @@ export class ValidationError extends AppError {
   }
 }
 
-/**
- * Central handler for every API route's catch block — never leak stack
- * traces or raw driver errors (e.g. Mongo duplicate-key messages) to the
- * client; log the real error server-side instead.
- */
 export function handleApiError(error: unknown): NextResponse {
   if (error instanceof ZodError) {
     const issues: Record<string, string[]> = {};
@@ -82,7 +77,6 @@ export function handleApiError(error: unknown): NextResponse {
     );
   }
 
-  // MongoDB duplicate key error
   if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
     return NextResponse.json(
       { error: { code: "CONFLICT", message: "A record with these details already exists" } },

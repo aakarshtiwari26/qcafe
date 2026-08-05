@@ -27,7 +27,6 @@ const otpSchema = new Schema<IOtp>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-// MongoDB TTL index — expired OTP documents are reaped automatically.
 otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 otpSchema.index({ email: 1, purpose: 1, createdAt: -1 });
 

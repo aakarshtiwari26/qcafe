@@ -3,7 +3,6 @@ import { RestaurantSettings, type IRestaurantSettings } from "@/models";
 import { getSiteConfig } from "@/config/site";
 import type { RestaurantSettingsInput } from "@/lib/validators/user";
 
-/** Seeds the singleton settings document from env defaults on first read. */
 export async function getRestaurantSettings(): Promise<IRestaurantSettings> {
   await connectDB();
   const site = getSiteConfig();

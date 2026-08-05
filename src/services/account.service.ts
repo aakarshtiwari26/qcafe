@@ -17,8 +17,6 @@ import type {
 export async function forgotPassword(input: ForgotPasswordInput) {
   await connectDB();
   const user = await User.findOne({ email: input.email });
-  // Always behave the same way to callers regardless of whether the
-  // account exists — prevents email enumeration.
   if (!user) return;
 
   const code = generateOtpCode();
@@ -43,7 +41,6 @@ export async function resetPassword(input: ResetPasswordInput) {
   user.passwordHash = await hashPassword(input.newPassword);
   await user.save();
 
-  // Force logout everywhere — a password reset invalidates every session.
   await RefreshToken.updateMany({ user: user._id, revokedAt: { $exists: false } }, { $set: { revokedAt: new Date() } });
 
   await logActivity({
@@ -77,7 +74,6 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
 
 const EMAIL_CHANGE_STEP1_PURPOSE = "email_change_step1_verified";
 
-/** Step 1 of 4: send an OTP to the user's current email. */
 export async function requestEmailChangeCurrent(userId: string) {
   await connectDB();
   const user = await User.findById(userId);
@@ -95,7 +91,6 @@ export async function requestEmailChangeCurrent(userId: string) {
   );
 }
 
-/** Step 2 of 4: verify that OTP, issue a short-lived token proving step 1 passed. */
 export async function verifyEmailChangeCurrent(userId: string, code: string) {
   await connectDB();
   const user = await User.findById(userId);
@@ -106,7 +101,6 @@ export async function verifyEmailChangeCurrent(userId: string, code: string) {
   return signActionToken({ sub: userId, purpose: EMAIL_CHANGE_STEP1_PURPOSE });
 }
 
-/** Step 3 of 4: given the bridge token + a new email, send an OTP to the new address. */
 export async function requestEmailChangeNew(userId: string, changeToken: string, newEmail: string) {
   await connectDB();
   const verified = await verifyActionToken(changeToken, EMAIL_CHANGE_STEP1_PURPOSE);
@@ -133,7 +127,6 @@ export async function requestEmailChangeNew(userId: string, changeToken: string,
   );
 }
 
-/** Step 4 of 4: verify the new-email OTP and commit the change. */
 export async function verifyEmailChangeNew(userId: string, code: string) {
   await connectDB();
   const user = await User.findById(userId);
@@ -160,7 +153,6 @@ export async function verifyEmailChangeNew(userId: string, code: string) {
   return user;
 }
 
-/** Phone change: single email-OTP round (no SMS in this platform). */
 export async function requestPhoneChange(userId: string, newPhone: string) {
   await connectDB();
   const user = await User.findById(userId);

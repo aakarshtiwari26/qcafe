@@ -1,12 +1,6 @@
 import { getSiteConfig } from "@/config/site";
 import { getRestaurantSettings } from "@/services/settings.service";
 
-/**
- * Every transactional email wraps this shell — table-based layout because
- * Outlook/Gmail strip modern CSS. Branding comes from getSiteConfig() (env
- * vars); the support email comes from the admin-editable RestaurantSettings
- * doc, falling back to the env var if that's ever empty.
- */
 export async function emailLayout(bodyHtml: string, opts: { preheader?: string } = {}): Promise<string> {
   const site = getSiteConfig();
   const settings = await getRestaurantSettings().catch(() => null);

@@ -24,7 +24,6 @@ export async function logActivity(params: {
       userAgent: params.request?.headers.get("user-agent") ?? undefined,
     });
   } catch (err) {
-    // Audit logging must never break the primary request flow.
     console.error("[audit_log_failed]", err);
   }
 }

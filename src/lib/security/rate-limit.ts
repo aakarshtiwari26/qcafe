@@ -1,15 +1,7 @@
 import { env } from "@/config/env";
 
-/**
- * Fixed-window in-memory rate limiter. Fine for a single Vercel/Node
- * instance and for local dev; under real multi-instance serverless
- * scale-out, swap the `hits` Map for a shared store (Upstash Redis is the
- * standard pairing with Vercel) — the call signature below is designed to
- * make that a one-file change.
- */
 const hits = new Map<string, { count: number; resetAt: number }>();
 
-// Bound memory: sweep expired entries every 5 minutes instead of growing forever.
 setInterval(
   () => {
     const now = Date.now();
@@ -47,7 +39,6 @@ export function rateLimit(
   return { success: true, remaining: max - existing.count, resetAt: existing.resetAt };
 }
 
-/** Stricter presets for sensitive endpoints (auth, OTP) beyond the general API default. */
 export const RATE_LIMIT_PRESETS = {
   LOGIN: { windowMs: 15 * 60 * 1000, max: 10 },
   REGISTER: { windowMs: 60 * 60 * 1000, max: 5 },

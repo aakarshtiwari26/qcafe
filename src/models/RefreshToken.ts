@@ -1,10 +1,5 @@
 import { Schema, model, models, type Model, type Document, type Types } from "mongoose";
 
-/**
- * Server-side session record backing the refresh-token cookie. Storing a
- * hash (never the raw token) lets us revoke individual sessions or all
- * sessions for a user (logout-everywhere, forced logout on suspend).
- */
 export interface IRefreshToken extends Document {
   user: Types.ObjectId;
   tokenHash: string;

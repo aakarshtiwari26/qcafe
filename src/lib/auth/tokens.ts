@@ -3,13 +3,8 @@ import crypto from "crypto";
 import { env } from "@/config/env";
 import type { UserRole, UserStatus } from "@/constants";
 
-/**
- * `jose` (not `jsonwebtoken`) because it runs on both the Node runtime
- * (API routes) and the Edge runtime (middleware) — access tokens must be
- * verifiable in middleware without a Node-only crypto dependency.
- */
 export interface AccessTokenPayload {
-  sub: string; // user id
+  sub: string;
   role: UserRole;
   status: UserStatus;
 }
@@ -39,13 +34,6 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
   }
 }
 
-/**
- * Short-lived bridge tokens for multi-step flows (change-email step 1 -> 2)
- * where a stateless API needs to prove "the previous OTP step already
- * succeeded" without re-sending an OTP. Distinct `typ` claim from access
- * tokens so one can never be replayed as the other, even though they share
- * a signing secret.
- */
 export interface ActionTokenPayload {
   sub: string;
   purpose: string;
@@ -78,12 +66,6 @@ export async function verifyActionToken(
   }
 }
 
-/**
- * Refresh tokens are opaque random strings, not JWTs — the raw value is
- * only ever sent to the client as a cookie. The server stores a SHA-256
- * hash (see RefreshToken model) so a single row can be revoked on logout
- * or when an account is suspended, which a stateless JWT can't do.
- */
 export function generateRefreshTokenValue(): string {
   return crypto.randomBytes(64).toString("hex");
 }
@@ -99,7 +81,7 @@ export function refreshTokenExpiryDate(): Date {
 
 function parseDurationToMs(duration: string): number {
   const match = /^(\d+)([smhd])$/.exec(duration.trim());
-  if (!match) return 30 * 24 * 60 * 60 * 1000; // default 30d
+  if (!match) return 30 * 24 * 60 * 60 * 1000;
   const value = Number(match[1]);
   const unit = match[2];
   const unitMs = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[unit] ?? 86_400_000;
