@@ -1,5 +1,8 @@
 import { env } from "./env";
 
+// Matches the folder convention used by uploadImage() in lib/imagekit/client.ts.
+const IMAGEKIT_APP_FOLDER = env.APP_NAME.toLowerCase().replace(/\s+/g, "-");
+
 export function getSiteConfig() {
   return {
     name: env.APP_NAME,
@@ -7,7 +10,7 @@ export function getSiteConfig() {
     description: env.APP_DESCRIPTION,
     url: env.APP_URL,
     supportEmail: env.SUPPORT_EMAIL,
-    logoUrl: "/images/logo.webp",
+    logoUrl: `${env.IMAGEKIT_URL_ENDPOINT}/${IMAGEKIT_APP_FOLDER}/restaurant/logo.webp`,
     faviconUrl: "/favicon.ico",
     currency: env.DEFAULT_CURRENCY,
     deliveryFee: env.DEFAULT_DELIVERY_FEE,

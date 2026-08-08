@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Clock, MapPin, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { RestaurantStatusBadge } from "@/components/home/restaurant-status-badge";
 import type { IRestaurantSettings } from "@/models";
 
 export function Hero({ settings, siteName }: { settings: IRestaurantSettings; siteName: string }) {
@@ -12,13 +12,11 @@ export function Hero({ settings, siteName }: { settings: IRestaurantSettings; si
 
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:py-24 lg:px-8">
         <div>
-          <Badge
-            variant="secondary"
-            className={`gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${settings.isOpen ? "text-veg" : "text-nonveg"}`}
-          >
-            <span className={`size-1.5 rounded-full ${settings.isOpen ? "bg-veg" : "bg-nonveg"}`} />
-            {settings.isOpen ? "Open now" : "Currently closed"}
-          </Badge>
+          <RestaurantStatusBadge
+            isOpenToggle={settings.isOpen}
+            openingTime={settings.openingTime}
+            closingTime={settings.closingTime}
+          />
 
           <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-tight sm:text-5xl">
             Great food,
@@ -57,7 +55,7 @@ export function Hero({ settings, siteName }: { settings: IRestaurantSettings; si
 
         <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-[2rem] border border-border/60 shadow-2xl lg:max-w-none">
           <Image
-            src="/images/menu/Special-Veg-Thali.webp"
+            src="https://ik.imagekit.io/aakarshtiwari/qcafe/menu/special-veg-thali.webp"
             alt="Featured dish"
             fill
             priority

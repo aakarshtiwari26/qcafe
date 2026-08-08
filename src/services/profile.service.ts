@@ -1,10 +1,14 @@
 import { connectDB } from "@/lib/db/connect";
 import { User } from "@/models";
 import { NotFoundError, AppError } from "@/lib/api/errors";
+import { cleanupReplacedImage } from "@/lib/imagekit/cleanup";
 import type { UpdateProfileInput, AddressInput } from "@/lib/validators/user";
 
 export async function updateProfile(userId: string, input: UpdateProfileInput) {
   await connectDB();
+  const existing = await User.findById(userId);
+  if (!existing) throw new NotFoundError("Account not found");
+
   const update: Record<string, unknown> = {};
   if (input.name) update.name = input.name;
   if (input.hostelId) update.hostel = input.hostelId;
@@ -12,6 +16,11 @@ export async function updateProfile(userId: string, input: UpdateProfileInput) {
 
   const user = await User.findByIdAndUpdate(userId, update, { new: true, runValidators: true });
   if (!user) throw new NotFoundError("Account not found");
+
+  if (input.profileImage) {
+    await cleanupReplacedImage(existing.profileImage?.fileId, input.profileImage.fileId);
+  }
+
   return user;
 }
 

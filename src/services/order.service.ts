@@ -7,6 +7,7 @@ import { getRestaurantSettings } from "./settings.service";
 import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from "@/lib/email/mailer";
 import { logActivity } from "@/lib/audit/log";
 import { AppError, NotFoundError, ForbiddenError } from "@/lib/api/errors";
+import { isRestaurantOpen } from "@/lib/utils/restaurant-hours";
 import { ACTIVITY_ACTION, ORDER_STATUS, ORDER_STATUS_FLOW, PAGINATION, type OrderStatus } from "@/constants";
 import type { CreateOrderInput } from "@/lib/validators/order";
 
@@ -14,7 +15,7 @@ export async function createOrder(userId: string, input: CreateOrderInput, reque
   await connectDB();
 
   const settings = await getRestaurantSettings();
-  if (!settings.isOpen) {
+  if (!isRestaurantOpen(settings)) {
     throw new AppError("We're currently closed. Please check back during opening hours.", 409, "RESTAURANT_CLOSED");
   }
 

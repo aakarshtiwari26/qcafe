@@ -12,14 +12,15 @@ export interface UploadedImage {
 export async function uploadImage(
   buffer: Buffer,
   fileName: string,
-  folder: string
+  folder: string,
+  options: { useUniqueFileName?: boolean } = {}
 ): Promise<UploadedImage> {
   const file = await toFile(buffer, fileName);
   const result = await imagekit.files.upload({
     file,
     fileName,
     folder: `/${env.APP_NAME.toLowerCase().replace(/\s+/g, "-")}/${folder}`,
-    useUniqueFileName: true,
+    useUniqueFileName: options.useUniqueFileName ?? true,
   });
 
   if (!result.url || !result.fileId) {

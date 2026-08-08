@@ -1,5 +1,5 @@
 import { connectDB } from "../src/lib/db/connect";
-import { Hostel, Category, MenuItem, User, Coupon } from "../src/models";
+import { Hostel, Category, MenuItem, User, Coupon, Review } from "../src/models";
 import { hashPassword } from "../src/lib/auth/password";
 import { slugify } from "../src/lib/utils/slugify";
 import { FOOD_TYPE, SPICE_LEVEL, ITEM_TAG, USER_ROLE, USER_STATUS } from "../src/constants";
@@ -161,6 +161,21 @@ async function main() {
     { upsert: true }
   );
   console.log("Coupon: WELCOME10");
+
+  const REVIEWS = [
+    { customerName: "Ananya R.", detail: "Gavaskar Boys Hostel", quote: "Consistently fast, and the food actually arrives hot. My go-to for late-night study sessions." },
+    { customerName: "Rohan K.", detail: "Virat Boys Hostel", quote: "Ordering takes seconds and tracking is spot on — I know exactly when to head down." },
+    { customerName: "Meera S.", detail: "Mithali Girls Hostel", quote: "Portion sizes are generous and the thali options are genuinely good value." },
+  ];
+  for (let i = 0; i < REVIEWS.length; i++) {
+    const r = REVIEWS[i];
+    await Review.findOneAndUpdate(
+      { customerName: r.customerName, quote: r.quote },
+      { $set: { ...r, rating: 5, isActive: true, sortOrder: i } },
+      { upsert: true }
+    );
+  }
+  console.log(`Reviews: ${REVIEWS.length}`);
 
   console.log("\nSeed complete.");
   process.exit(0);

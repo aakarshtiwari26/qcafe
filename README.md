@@ -52,13 +52,17 @@ The app validates all required env vars at boot (`src/config/env.ts`) and fails 
 
 ### 4. Seed sample data (optional, recommended for local dev)
 
-Populates hostels, categories, ~29 menu items (using the placeholder photos in `public/images/menu`), a demo coupon, and an admin account — without needing real ImageKit credentials yet.
+Populates hostels, categories, ~29 menu items (using the placeholder photos in `public/images/menu`), a demo coupon, reviews, and an admin account — without needing real ImageKit credentials yet.
 
 ```bash
 npm run seed
 ```
 
 This creates an admin login: `admin@qcafe.local` / `Admin@12345`. **Change or remove this before deploying to production.**
+
+Before going to production, migrate those placeholder photos to ImageKit — see
+[`docs/imagekit.md`](docs/imagekit.md) for the two-step `migrate:upload-images` /
+`migrate:apply-images` scripts and how image storage works end to end.
 
 ### 5. Run
 
@@ -108,6 +112,8 @@ Architecture notes:
 | `npm run start` | Run the production build locally |
 | `npm run lint` | ESLint |
 | `npm run seed` | Populate local MongoDB with sample data |
+| `npm run migrate:upload-images` | Upload `public/images/**` to ImageKit (see `docs/imagekit.md`) |
+| `npm run migrate:apply-images` | Repoint seeded menu items at the uploaded ImageKit URLs |
 
 ## What's implemented vs. architecture-only
 

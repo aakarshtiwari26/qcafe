@@ -12,6 +12,7 @@ import {
   Ticket,
   Settings,
   ScrollText,
+  MessageSquareQuote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const LINKS = [
   { href: "/admin/hostels", label: "Hostels", icon: Building2 },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { href: "/admin/reviews", label: "Reviews", icon: MessageSquareQuote },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/activity-logs", label: "Activity Logs", icon: ScrollText },
 ];

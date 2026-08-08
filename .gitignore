@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local artifact from scripts/migrate-images-*.ts
+scripts/.imagekit-migration-manifest.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

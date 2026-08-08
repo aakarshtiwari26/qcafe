@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "tsx --env-file=.env.local scripts/seed.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "migrate:upload-images": "tsx --env-file=.env.local scripts/migrate-images-upload.ts",
+    "migrate:apply-images": "tsx --env-file=.env.local scripts/migrate-images-apply.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",

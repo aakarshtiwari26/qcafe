@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Camera, Users2, Send, MapPin, Phone, Mail, Clock } from "lucide-react";
 import { getSiteConfig } from "@/config/site";
 import { getRestaurantSettings } from "@/services/settings.service";
+import { getSession } from "@/lib/auth/session";
 
 const EXPLORE_LINKS = [
   { href: "/menu", label: "Full Menu" },
@@ -11,16 +12,26 @@ const EXPLORE_LINKS = [
   { href: "/#faq", label: "FAQ" },
 ];
 
-const ACCOUNT_LINKS = [
+const GUEST_ACCOUNT_LINKS = [
   { href: "/login", label: "Sign in" },
   { href: "/register", label: "Create account" },
   { href: "/dashboard/orders", label: "Track an order" },
   { href: "/dashboard/favorites", label: "Favorites" },
 ];
 
+const AUTHENTICATED_ACCOUNT_LINKS = [
+  { href: "/dashboard", label: "My Account" },
+  { href: "/dashboard/orders", label: "Track an order" },
+  { href: "/dashboard/favorites", label: "Favorites" },
+];
+
 export async function Footer() {
   const site = getSiteConfig();
-  const settings = await getRestaurantSettings().catch(() => null);
+  const [settings, session] = await Promise.all([
+    getRestaurantSettings().catch(() => null),
+    getSession(),
+  ]);
+  const accountLinks = session ? AUTHENTICATED_ACCOUNT_LINKS : GUEST_ACCOUNT_LINKS;
 
   return (
     <footer className="border-t border-border/60 bg-muted/30">
@@ -40,7 +51,7 @@ export async function Footer() {
           </div>
 
           <FooterColumn title="Explore" links={EXPLORE_LINKS} />
-          <FooterColumn title="Account" links={ACCOUNT_LINKS} />
+          <FooterColumn title="Account" links={accountLinks} />
 
           <div>
             <h3 className="text-sm font-semibold">Contact</h3>

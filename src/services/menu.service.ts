@@ -2,9 +2,23 @@ import { connectDB } from "@/lib/db/connect";
 import { MenuItem } from "@/models";
 import { NotFoundError } from "@/lib/api/errors";
 import { slugify } from "@/lib/utils/slugify";
+import { deleteImage } from "@/lib/imagekit/client";
 import { PAGINATION } from "@/constants";
 import type { MenuItemInput } from "@/lib/validators/menu";
 import type { FoodType, ItemTag } from "@/constants";
+
+// Duplicating a menu item copies its image references (same ImageKit fileId) into a second
+// document, so before deleting any file we confirm no other item still points at it —
+// otherwise deleting/editing one item's photos could break its duplicate's photos too.
+async function deleteMenuImagesIfUnreferenced(fileIds: string[]) {
+  for (const fileId of fileIds) {
+    if (!fileId || fileId === "local-seed") continue;
+    const stillReferenced = await MenuItem.exists({ "images.fileId": fileId });
+    if (!stillReferenced) {
+      await deleteImage(fileId).catch((err) => console.error("[imagekit] failed to delete menu image", fileId, err));
+    }
+  }
+}
 
 export interface MenuQueryOptions {
   categoryId?: string;
@@ -72,11 +86,21 @@ export async function createMenuItem(input: MenuItemInput) {
 
 export async function updateMenuItem(id: string, input: Partial<MenuItemInput>) {
   await connectDB();
+  const existing = await MenuItem.findById(id);
+  if (!existing) throw new NotFoundError("Menu item not found");
+
   const update: Record<string, unknown> = { ...input };
   if (input.name) update.slug = await uniqueSlug(input.name, id);
 
   const item = await MenuItem.findByIdAndUpdate(id, update, { new: true, runValidators: true });
   if (!item) throw new NotFoundError("Menu item not found");
+
+  if (input.images) {
+    const keptFileIds = new Set(input.images.map((img) => img.fileId));
+    const removedFileIds = existing.images.map((img) => img.fileId).filter((fileId) => !keptFileIds.has(fileId));
+    await deleteMenuImagesIfUnreferenced(removedFileIds);
+  }
+
   return item;
 }
 
@@ -84,6 +108,8 @@ export async function deleteMenuItem(id: string) {
   await connectDB();
   const item = await MenuItem.findByIdAndDelete(id);
   if (!item) throw new NotFoundError("Menu item not found");
+
+  await deleteMenuImagesIfUnreferenced(item.images.map((img) => img.fileId));
 }
 
 export async function duplicateMenuItem(id: string) {
