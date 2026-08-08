@@ -2,16 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowRight, ChevronDown, X } from "lucide-react";
+import { Loader2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
-import { ORDER_STATUS, ORDER_STATUS_LABELS, ORDER_STATUS_FLOW, type OrderStatus } from "@/constants";
+import { ORDER_STATUS, ORDER_STATUS_LABELS, type OrderStatus } from "@/constants";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -25,20 +19,15 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
   [ORDER_STATUS.CANCELLED]: "bg-nonveg/10 text-nonveg",
 };
 
-function getNextStatus(status: OrderStatus): OrderStatus | null {
-  const idx = ORDER_STATUS_FLOW.indexOf(status);
-  if (idx === -1 || idx === ORDER_STATUS_FLOW.length - 1) return null;
-  return ORDER_STATUS_FLOW[idx + 1];
-}
-
+// Admin only ever taps two things: Accept/Cancel a new order, and Delivered once it's
+// actually handed over. Everything in between (confirmed -> preparing -> ready ->
+// out for delivery) advances on its own — see autoAdvanceStatus in order.service.ts.
 export function OrderStatusSelect({ orderId, status }: { orderId: string; status: OrderStatus }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const next = getNextStatus(status);
-  const isTerminal = status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.CANCELLED;
+  const [loading, setLoading] = useState<OrderStatus | null>(null);
 
   async function updateStatus(value: OrderStatus) {
-    setLoading(true);
+    setLoading(value);
     try {
       await apiFetch(`/api/orders/${orderId}/status`, { method: "PATCH", body: JSON.stringify({ status: value }) });
       toast.success(`${orderId} marked ${ORDER_STATUS_LABELS[value]}`);
@@ -46,9 +35,37 @@ export function OrderStatusSelect({ orderId, status }: { orderId: string; status
     } catch (err) {
       toast.error(err instanceof ApiClientError ? err.message : "Failed to update status");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   }
+
+  if (status === ORDER_STATUS.RECEIVED) {
+    return (
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Button
+          size="sm"
+          disabled={loading !== null}
+          onClick={() => updateStatus(ORDER_STATUS.CONFIRMED)}
+          className="h-7 gap-1 rounded-full bg-brand px-3 text-xs text-brand-foreground hover:bg-brand/90"
+        >
+          {loading === ORDER_STATUS.CONFIRMED ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
+          Accept
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={loading !== null}
+          onClick={() => updateStatus(ORDER_STATUS.CANCELLED)}
+          className="h-7 gap-1 rounded-full px-3 text-xs text-destructive hover:bg-destructive/10"
+        >
+          {loading === ORDER_STATUS.CANCELLED ? <Loader2 className="size-3 animate-spin" /> : <X className="size-3" />}
+          Cancel
+        </Button>
+      </div>
+    );
+  }
+
+  const isTerminal = status === ORDER_STATUS.DELIVERED || status === ORDER_STATUS.CANCELLED;
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -60,28 +77,23 @@ export function OrderStatusSelect({ orderId, status }: { orderId: string; status
         <div className="flex shrink-0 items-center gap-1">
           <Button
             size="sm"
-            disabled={loading || !next}
-            onClick={() => next && updateStatus(next)}
+            disabled={loading !== null}
+            onClick={() => updateStatus(ORDER_STATUS.DELIVERED)}
             className="h-7 gap-1 rounded-full bg-brand px-3 text-xs text-brand-foreground hover:bg-brand/90"
           >
-            {loading ? <Loader2 className="size-3 animate-spin" /> : <ArrowRight className="size-3" />}
-            Mark {next ? ORDER_STATUS_LABELS[next] : ""}
+            {loading === ORDER_STATUS.DELIVERED ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
+            Delivered
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon-sm" variant="ghost" className="size-7" disabled={loading} aria-label="More status actions">
-                <ChevronDown className="size-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => updateStatus(ORDER_STATUS.CANCELLED)}
-                className="gap-2 text-destructive focus:text-destructive"
-              >
-                <X className="size-3.5" /> Cancel order
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            className="size-7 text-muted-foreground hover:text-destructive"
+            disabled={loading !== null}
+            onClick={() => updateStatus(ORDER_STATUS.CANCELLED)}
+            aria-label="Cancel order"
+          >
+            {loading === ORDER_STATUS.CANCELLED ? <Loader2 className="size-3 animate-spin" /> : <X className="size-3.5" />}
+          </Button>
         </div>
       )}
     </div>

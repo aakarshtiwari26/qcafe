@@ -3,13 +3,13 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Package } from "lucide-react";
 import { listOrdersForAdmin } from "@/services/order.service";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AdminOrdersFilters } from "@/components/admin/admin-orders-filters";
 import { OrderStatusSelect } from "@/components/admin/order-status-select";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PaginationControls } from "@/components/shared/pagination-controls";
 import { formatCurrency, formatDateTime } from "@/lib/utils/format";
-import type { OrderStatus } from "@/constants";
+import { ORDER_STATUS, type OrderStatus } from "@/constants";
+import { cn } from "@/lib/utils";
 import type { IUser } from "@/models";
 
 export const metadata: Metadata = { title: "Orders" };
@@ -48,43 +48,39 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
       {orders.length === 0 ? (
         <EmptyState icon={Package} title="No orders found" description="Try a different filter." className="border-none py-14" />
       ) : (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Hostel</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Placed</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => {
-                const customer = order.user as unknown as Pick<IUser, "name" | "email"> | null;
-                return (
-                  <TableRow key={order.orderId}>
-                    <TableCell>
-                      <Link href={`/orders/${order.orderId}`} className="font-mono text-sm font-medium text-brand hover:underline">
-                        {order.orderId}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm">{customer?.name ?? "—"}</p>
-                      <p className="text-xs text-muted-foreground">{customer?.email}</p>
-                    </TableCell>
-                    <TableCell className="text-sm">{order.hostelName}</TableCell>
-                    <TableCell className="text-sm font-semibold">{formatCurrency(order.total)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{formatDateTime(order.createdAt)}</TableCell>
-                    <TableCell>
-                      <OrderStatusSelect orderId={order.orderId} status={order.status} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <div className="divide-y divide-border">
+          {orders.map((order) => {
+            const customer = order.user as unknown as Pick<IUser, "name" | "email"> | null;
+            const needsAction = order.status === ORDER_STATUS.RECEIVED;
+            return (
+              <div
+                key={order.orderId}
+                className={cn(
+                  "-mx-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-xl px-3 py-4",
+                  needsAction && "bg-brand/5"
+                )}
+              >
+                <div className="min-w-0 flex-1 basis-64">
+                  <div className="flex items-center gap-2">
+                    <Link href={`/orders/${order.orderId}`} className="font-mono text-sm font-semibold text-brand hover:underline">
+                      {order.orderId}
+                    </Link>
+                    {needsAction && (
+                      <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-semibold text-brand-foreground">New</span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {customer?.name ?? "—"} · {order.hostelName}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{formatDateTime(order.createdAt)}</p>
+                </div>
+
+                <div className="shrink-0 text-sm font-semibold tabular-nums">{formatCurrency(order.total)}</div>
+
+                <OrderStatusSelect orderId={order.orderId} status={order.status} />
+              </div>
+            );
+          })}
         </div>
       )}
 

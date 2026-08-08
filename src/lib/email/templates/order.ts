@@ -20,7 +20,7 @@ export async function orderConfirmationEmail(order: IOrder) {
   const site = getSiteConfig();
   const html = await emailLayout(
     `<h1 style="margin:0 0 4px;font-size:20px;color:#18181b;">Order received</h1>
-<p style="margin:0 0 4px;font-size:14px;color:#52525b;">Order <strong>${order.orderId}</strong> is confirmed and headed to the kitchen.</p>
+<p style="margin:0 0 4px;font-size:14px;color:#52525b;">We've got order <strong>${order.orderId}</strong> — you'll get another email as soon as the restaurant confirms it.</p>
 ${itemsTable(order)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td style="font-size:14px;color:#52525b;padding:2px 0;">Subtotal</td><td style="text-align:right;font-size:14px;color:#52525b;">${formatCurrency(order.subtotal)}</td></tr>
@@ -29,9 +29,9 @@ ${itemsTable(order)}
 <tr><td style="font-size:16px;font-weight:700;color:#18181b;padding:8px 0 0;">Total</td><td style="text-align:right;font-size:16px;font-weight:700;color:#18181b;padding:8px 0 0;">${formatCurrency(order.total)}</td></tr>
 </table>
 ${emailButton("Track your order", `${site.url}/orders/${order.orderId}`)}`,
-    { preheader: `Order ${order.orderId} confirmed · ${formatCurrency(order.total)}` }
+    { preheader: `Order ${order.orderId} received · ${formatCurrency(order.total)}` }
   );
-  return { subject: `Order ${order.orderId} confirmed · ${site.name}`, html };
+  return { subject: `Order ${order.orderId} received · ${site.name}`, html };
 }
 
 export async function orderStatusUpdateEmail(order: Pick<IOrder, "orderId">, status: OrderStatus) {

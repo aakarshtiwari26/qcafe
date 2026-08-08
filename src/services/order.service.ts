@@ -7,7 +7,7 @@ import { getRestaurantSettings } from "./settings.service";
 import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from "@/lib/email/mailer";
 import { logActivity } from "@/lib/audit/log";
 import { AppError, NotFoundError, ForbiddenError } from "@/lib/api/errors";
-import { ACTIVITY_ACTION, ORDER_STATUS, PAGINATION, type OrderStatus } from "@/constants";
+import { ACTIVITY_ACTION, ORDER_STATUS, ORDER_STATUS_FLOW, PAGINATION, type OrderStatus } from "@/constants";
 import type { CreateOrderInput } from "@/lib/validators/order";
 
 export async function createOrder(userId: string, input: CreateOrderInput, request: NextRequest) {
@@ -107,6 +107,7 @@ export async function getOrderByOrderId(orderId: string, requesterId: string, is
   if (!isAdmin && String(order.user) !== requesterId) {
     throw new ForbiddenError("You don't have access to this order");
   }
+  await autoAdvanceStatus(order);
   return order;
 }
 
@@ -119,6 +120,7 @@ export async function listOrdersForUser(userId: string, page = 1, pageSize: numb
       .limit(pageSize),
     Order.countDocuments({ user: userId }),
   ]);
+  await Promise.all(orders.map((order) => autoAdvanceStatus(order)));
   return { orders, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
@@ -149,18 +151,80 @@ export async function listOrdersForAdmin(query: AdminOrderQuery = {}) {
     Order.countDocuments(filter),
   ]);
 
+  await Promise.all(orders.map((order) => autoAdvanceStatus(order)));
+
   return { orders, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
+// Admin only ever taps Accept, Cancel, or Delivered. The kitchen stages in between
+// (confirmed -> preparing -> ready -> out for delivery) advance on their own, paced
+// off the restaurant's average delivery time, so nobody has to click through every step.
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [ORDER_STATUS.RECEIVED]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED],
-  [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PREPARING, ORDER_STATUS.CANCELLED],
-  [ORDER_STATUS.PREPARING]: [ORDER_STATUS.READY, ORDER_STATUS.CANCELLED],
-  [ORDER_STATUS.READY]: [ORDER_STATUS.OUT_FOR_DELIVERY, ORDER_STATUS.CANCELLED],
+  [ORDER_STATUS.CONFIRMED]: [
+    ORDER_STATUS.PREPARING,
+    ORDER_STATUS.READY,
+    ORDER_STATUS.OUT_FOR_DELIVERY,
+    ORDER_STATUS.DELIVERED,
+    ORDER_STATUS.CANCELLED,
+  ],
+  [ORDER_STATUS.PREPARING]: [
+    ORDER_STATUS.READY,
+    ORDER_STATUS.OUT_FOR_DELIVERY,
+    ORDER_STATUS.DELIVERED,
+    ORDER_STATUS.CANCELLED,
+  ],
+  [ORDER_STATUS.READY]: [ORDER_STATUS.OUT_FOR_DELIVERY, ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED],
   [ORDER_STATUS.OUT_FOR_DELIVERY]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED],
   [ORDER_STATUS.DELIVERED]: [],
   [ORDER_STATUS.CANCELLED]: [],
 };
+
+const AUTO_ADVANCE_FROM = new Set<OrderStatus>([
+  ORDER_STATUS.CONFIRMED,
+  ORDER_STATUS.PREPARING,
+  ORDER_STATUS.READY,
+  ORDER_STATUS.OUT_FOR_DELIVERY,
+]);
+
+function computeAutoStatus(minutesSinceConfirmed: number, avgDeliveryTimeMinutes: number): OrderStatus {
+  const budget = Math.max(avgDeliveryTimeMinutes, 1);
+  const ratio = minutesSinceConfirmed / budget;
+  if (ratio < 0.25) return ORDER_STATUS.PREPARING;
+  if (ratio < 0.65) return ORDER_STATUS.READY;
+  return ORDER_STATUS.OUT_FOR_DELIVERY;
+}
+
+/**
+ * Silently advances an accepted order through Preparing -> Ready -> Out for delivery
+ * based on elapsed time, so the admin never has to click each kitchen stage. Never
+ * touches Delivered/Cancelled — those stay admin-only. Runs whenever the order is read.
+ */
+export async function autoAdvanceStatus(order: IOrder): Promise<IOrder> {
+  if (!AUTO_ADVANCE_FROM.has(order.status)) return order;
+
+  const confirmedAt = order.statusHistory.find((h) => h.status === ORDER_STATUS.CONFIRMED)?.changedAt;
+  if (!confirmedAt) return order;
+
+  const settings = await getRestaurantSettings();
+  const minutesSinceConfirmed = (Date.now() - confirmedAt.getTime()) / 60000;
+  const target = computeAutoStatus(minutesSinceConfirmed, settings.avgDeliveryTimeMinutes);
+
+  if (ORDER_STATUS_FLOW.indexOf(target) <= ORDER_STATUS_FLOW.indexOf(order.status)) return order;
+
+  order.status = target;
+  order.statusHistory.push({ status: target, changedAt: new Date() });
+  await order.save();
+
+  const user = await User.findById(order.user);
+  if (user) {
+    await sendOrderStatusUpdateEmail(user.email, order, target).catch((err) =>
+      console.error("[order_status_email_failed]", err)
+    );
+  }
+
+  return order;
+}
 
 export async function updateOrderStatus(
   orderId: string,
