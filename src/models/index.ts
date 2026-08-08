@@ -8,3 +8,4 @@ export { RefreshToken, type IRefreshToken } from "./RefreshToken";
 export { Coupon, type ICoupon } from "./Coupon";
 export { ActivityLog, type IActivityLog } from "./ActivityLog";
 export { RestaurantSettings, type IRestaurantSettings } from "./RestaurantSettings";
+export { Counter, type ICounter } from "./Counter";

@@ -93,7 +93,7 @@ export function AddressManager({ addresses, hostels }: { addresses: AddressDTO[]
                 <Input id="label" placeholder="e.g. My room" {...register("label")} />
                 {errors.label && <p className="text-xs text-destructive">{errors.label.message}</p>}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="hostelId">Hostel</Label>
                   <Controller

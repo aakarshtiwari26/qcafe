@@ -97,7 +97,7 @@ export function CheckoutForm({
         <div className="rounded-2xl border border-border/60 bg-card p-5">
           <h2 className="text-sm font-semibold">Delivery details</h2>
 
-          <div className="mt-4 grid grid-cols-2 gap-3.5">
+          <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="hostelId">Hostel</Label>
               <Controller

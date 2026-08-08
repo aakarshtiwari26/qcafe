@@ -91,13 +91,13 @@ export function HostelManager({ hostels }: { hostels: HostelRow[] }) {
       ) : (
         <div className="mt-4 divide-y divide-border">
           {hostels.map((h) => (
-            <div key={h.id} className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-2.5">
-                <span className="text-sm font-medium">{h.name}</span>
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">{h.code}</span>
-                {!h.isActive && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">Inactive</span>}
+            <div key={h.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="truncate text-sm font-medium">{h.name}</span>
+                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">{h.code}</span>
+                {!h.isActive && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">Inactive</span>}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1">
                 <Button size="icon-sm" variant="ghost" onClick={() => openEdit(h)} aria-label="Edit">
                   <Pencil className="size-3.5" />
                 </Button>

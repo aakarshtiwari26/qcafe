@@ -10,7 +10,12 @@ export default async function AdminCategoriesPage() {
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-6">
       <CategoryManager
-        categories={categories.map((c) => ({ id: String(c._id), name: c.name, isActive: c.isActive }))}
+        categories={categories.map((c) => ({
+          id: String(c._id),
+          name: c.name,
+          isActive: c.isActive,
+          image: c.image?.url ? { url: c.image.url, fileId: c.image.fileId } : undefined,
+        }))}
       />
     </div>
   );

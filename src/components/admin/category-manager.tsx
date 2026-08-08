@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, Pencil, Loader2, FolderTree } from "lucide-react";
+import Image from "next/image";
+import { Plus, Trash2, Pencil, Loader2, FolderTree, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ImageUpload, type UploadedImageValue } from "@/components/shared/image-upload";
 import { categorySchema, type CategoryInput } from "@/lib/validators/menu";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
 import { toast } from "sonner";
@@ -19,6 +21,7 @@ export interface CategoryRow {
   id: string;
   name: string;
   isActive: boolean;
+  image?: UploadedImageValue;
 }
 
 export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
@@ -26,6 +29,7 @@ export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<CategoryRow | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [image, setImage] = useState<UploadedImageValue | undefined>(undefined);
 
   const {
     register,
@@ -37,23 +41,26 @@ export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
 
   function openCreate() {
     setEditing(null);
+    setImage(undefined);
     reset({ name: "", isActive: true, sortOrder: categories.length });
     setOpen(true);
   }
 
   function openEdit(cat: CategoryRow) {
     setEditing(cat);
+    setImage(cat.image);
     reset({ name: cat.name, isActive: cat.isActive });
     setOpen(true);
   }
 
   async function onSubmit(values: CategoryInput) {
+    const payload = { ...values, image };
     try {
       if (editing) {
-        await apiFetch(`/api/categories/${editing.id}`, { method: "PATCH", body: JSON.stringify(values) });
+        await apiFetch(`/api/categories/${editing.id}`, { method: "PATCH", body: JSON.stringify(payload) });
         toast.success("Category updated");
       } else {
-        await apiFetch("/api/categories", { method: "POST", body: JSON.stringify(values) });
+        await apiFetch("/api/categories", { method: "POST", body: JSON.stringify(payload) });
         toast.success("Category created");
       }
       setOpen(false);
@@ -90,12 +97,19 @@ export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
       ) : (
         <div className="mt-4 divide-y divide-border">
           {categories.map((cat) => (
-            <div key={cat.id} className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-2.5">
-                <span className="text-sm font-medium">{cat.name}</span>
-                {!cat.isActive && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">Inactive</span>}
+            <div key={cat.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-muted">
+                  {cat.image?.url ? (
+                    <Image src={cat.image.url} alt="" fill sizes="36px" className="object-cover" />
+                  ) : (
+                    <UtensilsCrossed className="size-4 text-muted-foreground" />
+                  )}
+                </div>
+                <span className="truncate text-sm font-medium">{cat.name}</span>
+                {!cat.isActive && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">Inactive</span>}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1">
                 <Button size="icon-sm" variant="ghost" onClick={() => openEdit(cat)} aria-label="Edit">
                   <Pencil className="size-3.5" />
                 </Button>
@@ -121,6 +135,10 @@ export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
             <DialogTitle>{editing ? "Edit category" : "Add category"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+            <div className="space-y-1.5">
+              <Label>Image</Label>
+              <ImageUpload value={image} onChange={setImage} folder="category" shape="square" size={80} />
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="name">Name</Label>
               <Input id="name" {...register("name")} />
